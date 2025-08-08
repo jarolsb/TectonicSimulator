@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Tectonic Plate Boundary Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .view-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .view-btn {
+            padding: 10px 30px;
+            background: #4a5568;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .view-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transform: scale(1.05);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .control-group h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-divergent {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-convergent {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .btn-transform {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .btn-control {
+            background: #2d3748;
+            color: white;
+        }
+
+        .btn-control:hover {
+            background: #4a5568;
+        }
+
+        .active {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .speed-value {
+            text-align: center;
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .svg-container {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        svg {
+            width: 100%;
+            height: 600px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 50%, #d4d4d8 50%, #737373 100%);
+        }
+
+        .info-panel {
+            background: #edf2f7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .info-panel h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .info-panel p {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .reset-btn {
+            background: #ed8936;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .reset-btn:hover {
+            background: #dd6b20;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulsing {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes lava-flow {
+            0% { offset-distance: 0%; }
+            100% { offset-distance: 100%; }
+        }
+
+        .plate-type-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .plate-type-btn {
+            flex: 1;
+            padding: 8px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .plate-type-btn.selected {
+            background: #4a5568;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Advanced Tectonic Plate Boundary Simulator</h1>
+        <p class="subtitle">Explore how Earth's plates interact and shape our planet - with cross-section view!</p>
+
+        <div class="view-toggle">
+            <button class="view-btn active" onclick="setView('overhead')">Overhead View</button>
+            <button class="view-btn" onclick="setView('cross-section')">Cross-Section View</button>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <h3>Select Boundary Type</h3>
+                <div class="button-group">
+                    <button class="btn-divergent" onclick="setBoundaryType('divergent')">
+                        ↔️ Divergent Boundary
+                    </button>
+                    <button class="btn-convergent" onclick="setBoundaryType('convergent')">
+                        →← Convergent Boundary
+                    </button>
+                    <button class="btn-transform" onclick="setBoundaryType('transform')">
+                        ↕️ Transform Boundary
+                    </button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Plate Types</h3>
+                <label>Left Plate (Plate A)</label>
+                <div class="plate-type-selector">
+                    <button class="plate-type-btn selected" onclick="setPlateType('left', 'continental')">Continental</button>
+                    <button class="plate-type-btn" onclick="setPlateType('left', 'oceanic')">Oceanic</button>
+                </div>
+                <label style="margin-top: 10px;">Right Plate (Plate B)</label>
+                <div class="plate-type-selector">
+                    <button class="plate-type-btn" onclick="setPlateType('right', 'continental')">Continental</button>
+                    <button class="plate-type-btn selected" onclick="setPlateType('right', 'oceanic')">Oceanic</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Animation Controls</h3>
+                <label for="speed">Movement Speed</label>
+                <input type="range" id="speed" min="0" max="10" value="5" oninput="updateSpeed(this.value)">
+                <div class="speed-value">Speed: <span id="speedValue">5</span></div>
+                <button class="btn-control" onclick="toggleAnimation()">Play/Pause</button>
+                <button class="reset-btn" onclick="resetSimulation()">Reset</button>
+            </div>
+        </div>
+
+        <div class="svg-container">
+            <svg id="simulator" viewBox="0 0 1000 600">
+                <defs>
+                    <!-- Gradients and Patterns -->
+                    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#87ceeb;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#e0f2fe;stop-opacity:1" />
+                    </linearGradient>
+                    
+                    <linearGradient id="earthGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#8b7355;stop-opacity:1" />
+                        <stop offset="30%" style="stop-color:#a0522d;stop-opacity:1" />
+                        <stop offset="60%" style="stop-color:#cd853f;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#daa520;stop-opacity:1" />
+                    </linearGradient>
+
+                    <linearGradient id="mantleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#ff6b35;stop-opacity:1" />
+                        <stop offset="50%" style="stop-color:#ff4500;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#dc143c;stop-opacity:1" />
+                    </linearGradient>
+
+                    <pattern id="continentalPattern" patternUnits="userSpaceOnUse" width="40" height="40">
+                        <rect width="40" height="40" fill="#8b7355"/>
+                        <line x1="0" y1="10" x2="40" y2="10" stroke="#7a6245" stroke-width="1" opacity="0.3"/>
+                        <line x1="0" y1="20" x2="40" y2="20" stroke="#7a6245" stroke-width="1" opacity="0.3"/>
+                        <line x1="0" y1="30" x2="40" y2="30" stroke="#7a6245" stroke-width="1" opacity="0.3"/>
+                        <circle cx="10" cy="15" r="2" fill="#6b5a45" opacity="0.3"/>
+                        <circle cx="30" cy="25" r="2" fill="#6b5a45" opacity="0.3"/>
+                    </pattern>
+                    
+                    <pattern id="oceanicPattern" patternUnits="userSpaceOnUse" width="40" height="40">
+                        <rect width="40" height="40" fill="#6b6b6b"/>
+                        <line x1="0" y1="20" x2="40" y2="20" stroke="#525252" stroke-width="2" opacity="0.4"/>
+                        <circle cx="20" cy="20" r="3" fill="#525252" opacity="0.3"/>
+                    </pattern>
+
+                    <filter id="shadow">
+                        <feDropShadow dx="2" dy="4" stdDeviation="3" flood-opacity="0.3"/>
+                    </filter>
+
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+
+                    <!-- Mountain symbol -->
+                    <g id="mountain-icon">
+                        <polygon points="0,20 10,0 20,20" fill="#654321" stroke="#4a3018" stroke-width="1"/>
+                        <polygon points="10,20 20,5 30,20" fill="#7a5c3a" stroke="#4a3018" stroke-width="1"/>
+                    </g>
+
+                    <!-- Volcano symbol -->
+                    <g id="volcano-icon">
+                        <polygon points="0,20 15,0 30,20" fill="#8b4513" stroke="#654321" stroke-width="1"/>
+                        <ellipse cx="15" cy="3" rx="5" ry="3" fill="#ff4500" opacity="0.8"/>
+                    </g>
+
+                    <marker id="arrowhead" markerWidth="10" markerHeight="10" 
+                            refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="red" />
+                    </marker>
+                </defs>
+
+                <!-- Cross-Section View (hidden by default) -->
+                <g id="crossSectionView" style="display: none;">
+                    <!-- Sky -->
+                    <rect width="1000" height="200" fill="url(#skyGradient)"/>
+                    
+                    <!-- Ocean -->
+                    <rect x="0" y="150" width="1000" height="100" fill="#4682b4" opacity="0.6"/>
+                    
+                    <!-- Wave pattern -->
+                    <path d="M0,150 Q50,140 100,150 T200,150 T300,150 T400,150 T500,150 T600,150 T700,150 T800,150 T900,150 T1000,150" 
+                          stroke="#ffffff" stroke-width="2" fill="none" opacity="0.5"/>
+                    
+                    <!-- Earth layers -->
+                    <rect x="0" y="250" width="1000" height="100" fill="url(#earthGradient)"/>
+                    <rect x="0" y="350" width="1000" height="150" fill="#a0522d"/>
+                    <rect x="0" y="500" width="1000" height="100" fill="url(#mantleGradient)"/>
+                    
+                    <!-- Stratigraphy lines -->
+                    <g id="stratigraphy" opacity="0.3">
+                        <line x1="0" y1="280" x2="1000" y2="280" stroke="#654321" stroke-width="1"/>
+                        <line x1="0" y1="320" x2="1000" y2="320" stroke="#654321" stroke-width="1"/>
+                        <line x1="0" y1="380" x2="1000" y2="380" stroke="#654321" stroke-width="1"/>
+                        <line x1="0" y1="430" x2="1000" y2="430" stroke="#654321" stroke-width="1"/>
+                        <line x1="0" y1="480" x2="1000" y2="480" stroke="#654321" stroke-width="1"/>
+                    </g>
+                    
+                    <!-- Tectonic Plates in cross-section -->
+                    <g id="crossSectionPlates">
+                        <!-- Left Plate -->
+                        <g id="leftPlateCross" transform="translate(0, 0)">
+                            <path id="leftPlatePath" d="M50,250 L350,250 L350,350 L50,350 Z" 
+                                  fill="url(#continentalPattern)" stroke="#5a4a3a" stroke-width="3" filter="url(#shadow)"/>
+                            <text x="200" y="300" text-anchor="middle" fill="white" font-size="18" font-weight="bold">
+                                Plate A
+                            </text>
+                        </g>
+                        
+                        <!-- Right Plate -->
+                        <g id="rightPlateCross" transform="translate(0, 0)">
+                            <path id="rightPlatePath" d="M650,250 L950,250 L950,350 L650,350 Z" 
+                                  fill="url(#oceanicPattern)" stroke="#3a3a3a" stroke-width="3" filter="url(#shadow)"/>
+                            <text x="800" y="300" text-anchor="middle" fill="white" font-size="18" font-weight="bold">
+                                Plate B
+                            </text>
+                        </g>
+                    </g>
+                    
+                    <!-- Cross-section deformation features -->
+                    <g id="crossSectionDeformation"></g>
+                    
+                    <!-- Labels for layers -->
+                    <text x="50" y="300" fill="#4a5568" font-size="14" font-weight="bold">Crust</text>
+                    <text x="50" y="425" fill="#4a5568" font-size="14" font-weight="bold">Lithosphere</text>
+                    <text x="50" y="550" fill="#ffffff" font-size="14" font-weight="bold">Asthenosphere</text>
+                </g>
+
+                <!-- Overhead View (default) -->
+                <g id="overheadView">
+                    <!-- Background -->
+                    <rect width="1000" height="600" fill="#e0f2fe" opacity="0.3"/>
+                    
+                    <!-- Grid lines for reference -->
+                    <g id="grid" opacity="0.1">
+                        <line x1="200" y1="0" x2="200" y2="600" stroke="#000" stroke-width="1"/>
+                        <line x1="400" y1="0" x2="400" y2="600" stroke="#000" stroke-width="1"/>
+                        <line x1="600" y1="0" x2="600" y2="600" stroke="#000" stroke-width="1"/>
+                        <line x1="800" y1="0" x2="800" y2="600" stroke="#000" stroke-width="1"/>
+                        <line x1="0" y1="150" x2="1000" y2="150" stroke="#000" stroke-width="1"/>
+                        <line x1="0" y1="300" x2="1000" y2="300" stroke="#000" stroke-width="1"/>
+                        <line x1="0" y1="450" x2="1000" y2="450" stroke="#000" stroke-width="1"/>
+                    </g>
+
+                    <!-- Tectonic Plates -->
+                    <g id="plates">
+                        <!-- Left Plate -->
+                        <g id="leftPlate" transform="translate(0, 0)">
+                            <rect id="leftPlateRect" x="100" y="200" width="350" height="200" 
+                                  fill="url(#continentalPattern)" stroke="#5a4a3a" stroke-width="3" filter="url(#shadow)"/>
+                            <text x="275" y="300" text-anchor="middle" fill="white" font-size="20" font-weight="bold">
+                                Continental Plate A
+                            </text>
+                        </g>
+
+                        <!-- Right Plate -->
+                        <g id="rightPlate" transform="translate(0, 0)">
+                            <rect id="rightPlateRect" x="550" y="200" width="350" height="200" 
+                                  fill="url(#oceanicPattern)" stroke="#3a3a3a" stroke-width="3" filter="url(#shadow)"/>
+                            <text x="725" y="300" text-anchor="middle" fill="white" font-size="20" font-weight="bold">
+                                Oceanic Plate B
+                            </text>
+                        </g>
+                    </g>
+
+                    <!-- Movement Arrows -->
+                    <g id="arrows">
+                        <!-- Left plate arrow -->
+                        <line id="leftArrow" x1="275" y1="150" x2="325" y2="150" 
+                              stroke="red" stroke-width="3" marker-end="url(#arrowhead)" />
+                        
+                        <!-- Right plate arrow -->
+                        <line id="rightArrow" x1="725" y1="150" x2="675" y2="150" 
+                              stroke="red" stroke-width="3" marker-end="url(#arrowhead)" />
+                    </g>
+
+                    <!-- Deformation Features -->
+                    <g id="overheadDeformation"></g>
+                </g>
+
+                <!-- Labels -->
+                <g id="labels">
+                    <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2d3748">
+                        <tspan id="boundaryTypeLabel">Select a Boundary Type</tspan>
+                    </text>
+                </g>
+            </svg>
+        </div>
+
+        <div class="info-panel">
+            <h3 id="infoTitle">Welcome to the Advanced Tectonic Plate Simulator!</h3>
+            <p id="infoDescription">
+                This simulator now features both overhead and cross-section views! Switch between views to see how plates interact 
+                from different perspectives. The cross-section view shows the underground stratigraphy and how plates deform beneath 
+                the Earth's surface. You can also change plate types between continental and oceanic to see different interactions.
+            </p>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8b7355;"></div>
+                <span>Continental Plate</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #6b6b6b;"></div>
+                <span>Oceanic Plate</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #ef4444, #f97316);"></div>
+                <span>Volcanic Activity/Magma</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #654321;"></div>
+                <span>Mountain Formation</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #1e3a8a;"></div>
+                <span>Ocean Trench</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentBoundaryType = null;
+        let currentView = 'overhead';
+        let animationSpeed = 5;
+        let isAnimating = false;
+        let animationFrame = null;
+        let platePositions = {
+            left: { x: 0, y: 0 },
+            right: { x: 0, y: 0 }
+        };
+        let plateVelocities = {
+            left: { x: -0.5, y: 0 },
+            right: { x: 0.5, y: 0 }
+        };
+        let plateTypes = {
+            left: 'continental',
+            right: 'oceanic'
+        };
+        let time = 0;
+        let deformationLevel = 0;
+
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (view === 'cross-section') {
+                document.getElementById('overheadView').style.display = 'none';
+                document.getElementById('crossSectionView').style.display = 'block';
+                document.getElementById('simulator').style.background = 'linear-gradient(180deg, #87ceeb 0%, #e0f2fe 33%, #8b7355 33%, #cd853f 66%, #ff6b35 66%, #dc143c 100%)';
+            } else {
+                document.getElementById('overheadView').style.display = 'block';
+                document.getElementById('crossSectionView').style.display = 'none';
+                document.getElementById('simulator').style.background = 'linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%)';
+            }
+            
+            updateVisualization();
+        }
+
+        function setPlateType(plate, type) {
+            plateTypes[plate] = type;
+            
+            // Update button styles
+            const buttons = event.target.parentElement.querySelectorAll('.plate-type-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            // Update plate appearance
+            updatePlateAppearance();
+            updateVisualization();
+        }
+
+        function updatePlateAppearance() {
+            const leftPattern = plateTypes.left === 'continental' ? 'url(#continentalPattern)' : 'url(#oceanicPattern)';
+            const rightPattern = plateTypes.right === 'continental' ? 'url(#continentalPattern)' : 'url(#oceanicPattern)';
+            const leftStroke = plateTypes.left === 'continental' ? '#5a4a3a' : '#3a3a3a';
+            const rightStroke = plateTypes.right === 'continental' ? '#5a4a3a' : '#3a3a3a';
+            
+            // Update overhead view
+            document.getElementById('leftPlateRect').setAttribute('fill', leftPattern);
+            document.getElementById('leftPlateRect').setAttribute('stroke', leftStroke);
+            document.getElementById('rightPlateRect').setAttribute('fill', rightPattern);
+            document.getElementById('rightPlateRect').setAttribute('stroke', rightStroke);
+            
+            // Update cross-section view
+            document.getElementById('leftPlatePath').setAttribute('fill', leftPattern);
+            document.getElementById('leftPlatePath').setAttribute('stroke', leftStroke);
+            document.getElementById('rightPlatePath').setAttribute('fill', rightPattern);
+            document.getElementById('rightPlatePath').setAttribute('stroke', rightStroke);
+            
+            // Update labels
+            const leftLabel = plateTypes.left === 'continental' ? 'Continental Plate A' : 'Oceanic Plate A';
+            const rightLabel = plateTypes.right === 'continental' ? 'Continental Plate B' : 'Oceanic Plate B';
+            document.querySelector('#leftPlate text').textContent = leftLabel;
+            document.querySelector('#rightPlate text').textContent = rightLabel;
+        }
+
+        function setBoundaryType(type) {
+            currentBoundaryType = type;
+            resetSimulation();
+            
+            // Update active button styling
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update information panel
+            const infoData = {
+                divergent: {
+                    title: "Divergent Boundary - Plates Moving Apart",
+                    description: "At divergent boundaries, tectonic plates move away from each other. This creates new oceanic crust through volcanic activity. The Mid-Atlantic Ridge is a prime example. As plates separate, magma rises from the asthenosphere, creating new seafloor. In the cross-section view, you can see how the mantle material rises to fill the gap.",
+                    leftVel: { x: -0.5, y: 0 },
+                    rightVel: { x: 0.5, y: 0 }
+                },
+                convergent: {
+                    title: "Convergent Boundary - Plates Colliding",
+                    description: "At convergent boundaries, plates move toward each other. When an oceanic plate meets a continental plate, the denser oceanic plate subducts beneath, creating deep trenches and coastal mountain ranges with volcanoes. When two continental plates collide, they create massive mountain ranges like the Himalayas. The cross-section view shows the subduction process and mountain building.",
+                    leftVel: { x: 0.5, y: 0 },
+                    rightVel: { x: -0.5, y: 0 }
+                },
+                transform: {
+                    title: "Transform Boundary - Plates Sliding Past",
+                    description: "At transform boundaries, plates slide horizontally past each other. No crust is created or destroyed, but the friction between plates causes earthquakes. The San Andreas Fault is a famous example. In cross-section, you can see how the plates grind past each other at different depths, creating complex fault systems.",
+                    leftVel: { x: 0, y: -0.5 },
+                    rightVel: { x: 0, y: 0.5 }
+                }
+            };
+            
+            const info = infoData[type];
+            document.getElementById('infoTitle').textContent = info.title;
+            document.getElementById('infoDescription').textContent = info.description;
+            document.getElementById('boundaryTypeLabel').textContent = info.title.split(' - ')[0];
+            
+            // Set default velocities based on boundary type
+            plateVelocities.left = { ...info.leftVel };
+            plateVelocities.right = { ...info.rightVel };
+            
+            // Update visualization
+            updateVisualization();
+        }
+
+        function updateSpeed(value) {
+            animationSpeed = parseInt(value);
+            document.getElementById('speedValue').textContent = value;
+        }
+
+        function toggleAnimation() {
+            if (!currentBoundaryType) {
+                alert('Please select a boundary type first!');
+                return;
+            }
+            
+            isAnimating = !isAnimating;
+            if (isAnimating) {
+                animate();
+            } else if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+            }
+        }
+
+        function animate() {
+            if (!isAnimating) return;
+            
+            time += animationSpeed / 100;
+            deformationLevel += animationSpeed / 200;
+            
+            // Update plate positions
+            platePositions.left.x += plateVelocities.left.x * animationSpeed / 5;
+            platePositions.left.y += plateVelocities.left.y * animationSpeed / 5;
+            platePositions.right.x += plateVelocities.right.x * animationSpeed / 5;
+            platePositions.right.y += plateVelocities.right.y * animationSpeed / 5;
+            
+            // Apply position limits
+            const maxDisplacement = 100;
+            platePositions.left.x = Math.max(-maxDisplacement, Math.min(maxDisplacement, platePositions.left.x));
+            platePositions.left.y = Math.max(-maxDisplacement, Math.min(maxDisplacement, platePositions.left.y));
+            platePositions.right.x = Math.max(-maxDisplacement, Math.min(maxDisplacement, platePositions.right.x));
+            platePositions.right.y = Math.max(-maxDisplacement, Math.min(maxDisplacement, platePositions.right.y));
+            
+            // Update plate transforms for both views
+            document.getElementById('leftPlate').setAttribute('transform', 
+                `translate(${platePositions.left.x}, ${platePositions.left.y})`);
+            document.getElementById('rightPlate').setAttribute('transform', 
+                `translate(${platePositions.right.x}, ${platePositions.right.y})`);
+            
+            document.getElementById('leftPlateCross').setAttribute('transform', 
+                `translate(${platePositions.left.x}, ${platePositions.left.y})`);
+            document.getElementById('rightPlateCross').setAttribute('transform', 
+                `translate(${platePositions.right.x}, ${platePositions.right.y})`);
+            
+            // Update deformation features
+            updateDeformation();
+            
+            animationFrame = requestAnimationFrame(animate);
+        }
+
+        function updateDeformation() {
+            if (currentView === 'overhead') {
+                updateOverheadDeformation();
+            } else {
+                updateCrossSectionDeformation();
+            }
+        }
+
+        function updateOverheadDeformation() {
+            const deformationGroup = document.getElementById('overheadDeformation');
+            deformationGroup.innerHTML = '';
+            
+            if (!currentBoundaryType) return;
+            
+            const gap = 500 - (450 + platePositions.left.x) + (550 + platePositions.right.x);
+            
+            if (currentBoundaryType === 'divergent') {
+                // Create rift valley / mid-ocean ridge
+                if (gap > 100) {
+                    const ridge = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    ridge.setAttribute('points', `${450 + platePositions.left.x},300 ${500},250 ${550 + platePositions.right.x},300`);
+                    ridge.setAttribute('fill', '#3b82f6');
+                    ridge.setAttribute('opacity', '0.7');
+                    deformationGroup.appendChild(ridge);
+                    
+                    // Add volcanic activity symbols
+                    for (let i = 0; i < 3; i++) {
+                        const volcano = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+                        volcano.setAttribute('href', '#volcano-icon');
+                        volcano.setAttribute('x', 485 + i * 10);
+                        volcano.setAttribute('y', 240 + i * 20);
+                        volcano.setAttribute('transform', `scale(${1 + Math.sin(time + i) * 0.2})`);
+                        deformationGroup.appendChild(volcano);
+                    }
+                }
+            } else if (currentBoundaryType === 'convergent') {
+                // Different behavior based on plate types
+                const isOceanicContinental = (plateTypes.left === 'oceanic' && plateTypes.right === 'continental') || 
+                                            (plateTypes.left === 'continental' && plateTypes.right === 'oceanic');
+                
+                if (gap < 50) {
+                    if (isOceanicContinental) {
+                        // Subduction zone with coastal mountains
+                        const coastalMountains = Math.min(5, Math.floor(deformationLevel / 2));
+                        for (let i = 0; i < coastalMountains; i++) {
+                            const mountain = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+                            mountain.setAttribute('href', '#mountain-icon');
+                            const xPos = plateTypes.left === 'continental' ? 420 - i * 30 : 520 + i * 30;
+                            mountain.setAttribute('x', xPos + platePositions.left.x * 0.3);
+                            mountain.setAttribute('y', 270 - i * 5);
+                            mountain.setAttribute('transform', `scale(${1.5 - i * 0.1})`);
+                            deformationGroup.appendChild(mountain);
+                        }
+                        
+                        // Volcanic arc
+                        for (let i = 0; i < 2; i++) {
+                            const volcano = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+                            volcano.setAttribute('href', '#volcano-icon');
+                            const xPos = plateTypes.left === 'continental' ? 380 - i * 40 : 560 + i * 40;
+                            volcano.setAttribute('x', xPos);
+                            volcano.setAttribute('y', 260);
+                            deformationGroup.appendChild(volcano);
+                        }
+                    } else {
+                        // Continental collision - massive mountain range
+                        const mountains = Math.min(7, Math.floor(deformationLevel / 1.5));
+                        for (let i = 0; i < mountains; i++) {
+                            const mountain = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+                            mountain.setAttribute('href', '#mountain-icon');
+                            mountain.setAttribute('x', 470 + (i - 3) * 25);
+                            mountain.setAttribute('y', 270 - Math.abs(i - 3) * 10);
+                            mountain.setAttribute('transform', `scale(${2 - Math.abs(i - 3) * 0.2})`);
+                            deformationGroup.appendChild(mountain);
+                        }
+                    }
+                    
+                    // Ocean trench for oceanic subduction
+                    if (isOceanicContinental) {
+                        const trench = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                        const trenchX = plateTypes.left === 'oceanic' ? 470 : 510;
+                        trench.setAttribute('x', trenchX);
+                        trench.setAttribute('y', 350);
+                        trench.setAttribute('width', 20);
+                        trench.setAttribute('height', Math.min(60, 100 - gap));
+                        trench.setAttribute('fill', '#1e3a8a');
+                        trench.setAttribute('opacity', '0.7');
+                        deformationGroup.appendChild(trench);
+                    }
+                }
+            } else if (currentBoundaryType === 'transform') {
+                // Create fault line with offset
+                const offset = platePositions.left.y - platePositions.right.y;
+                
+                const faultLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                faultLine.setAttribute('x1', 500);
+                faultLine.setAttribute('y1', 200);
+                faultLine.setAttribute('x2', 500);
+                faultLine.setAttribute('y2', 400);
+                faultLine.setAttribute('stroke', '#dc2626');
+                faultLine.setAttribute('stroke-width', '4');
+                faultLine.setAttribute('stroke-dasharray', '10,5');
+                deformationGroup.appendChild(faultLine);
+                
+                // Add earthquake indicators
+                if (Math.abs(offset) > 20) {
+                    for (let i = 0; i < 4; i++) {
+                        const quake = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        quake.setAttribute('cx', 500 + (Math.random() - 0.5) * 100);
+                        quake.setAttribute('cy', 300 + (Math.random() - 0.5) * 100);
+                        quake.setAttribute('r', 5 + Math.sin(time * 10 + i) * 3);
+                        quake.setAttribute('fill', 'none');
+                        quake.setAttribute('stroke', '#fbbf24');
+                        quake.setAttribute('stroke-width', '2');
+                        quake.setAttribute('opacity', Math.abs(Math.sin(time * 5 + i)));
+                        deformationGroup.appendChild(quake);
+                    }
+                }
+            }
+        }
+
+        function updateCrossSectionDeformation() {
+            const deformationGroup = document.getElementById('crossSectionDeformation');
+            deformationGroup.innerHTML = '';
+            
+            if (!currentBoundaryType) return;
+            
+            const gap = 500 - (350 + platePositions.left.x) + (650 + platePositions.right.x);
+            
+            if (currentBoundaryType === 'divergent') {
+                // Show magma rising from mantle
+                if (gap > 100) {
+                    // Magma chamber
+                    const magmaChamber = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+                    magmaChamber.setAttribute('cx', 500);
+                    magmaChamber.setAttribute('cy', 450);
+                    magmaChamber.setAttribute('rx', 40 + Math.sin(time) * 5);
+                    magmaChamber.setAttribute('ry', 60);
+                    magmaChamber.setAttribute('fill', '#ff4500');
+                    magmaChamber.setAttribute('opacity', '0.8');
+                    magmaChamber.setAttribute('filter', 'url(#glow)');
+                    deformationGroup.appendChild(magmaChamber);
+                    
+                    // Magma conduit
+                    const conduit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    conduit.setAttribute('x', 490);
+                    conduit.setAttribute('y', 250);
+                    conduit.setAttribute('width', 20);
+                    conduit.setAttribute('height', 200);
+                    conduit.setAttribute('fill', '#ff6b35');
+                    conduit.setAttribute('opacity', '0.7');
+                    deformationGroup.appendChild(conduit);
+                    
+                    // New seafloor
+                    const newCrust = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    newCrust.setAttribute('x', 480);
+                    newCrust.setAttribute('y', 240);
+                    newCrust.setAttribute('width', 40);
+                    newCrust.setAttribute('height', 20);
+                    newCrust.setAttribute('fill', '#2c2c2c');
+                    newCrust.setAttribute('opacity', '0.8');
+                    deformationGroup.appendChild(newCrust);
+                    
+                    // Volcanic eruption
+                    const eruption = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    eruption.setAttribute('points', `490,240 500,180 510,240`);
+                    eruption.setAttribute('fill', '#ff4500');
+                    eruption.setAttribute('opacity', 0.6 + Math.sin(time * 3) * 0.3);
+                    deformationGroup.appendChild(eruption);
+                }
+            } else if (currentBoundaryType === 'convergent') {
+                const isOceanicContinental = (plateTypes.left === 'oceanic' && plateTypes.right === 'continental') || 
+                                            (plateTypes.left === 'continental' && plateTypes.right === 'oceanic');
+                
+                if (gap < 50) {
+                    if (isOceanicContinental) {
+                        // Subduction zone
+                        const subductingPlate = plateTypes.left === 'oceanic' ? 'left' : 'right';
+                        const angle = Math.min(45, deformationLevel * 2);
+                        
+                        // Bending oceanic plate
+                        const bendingPlate = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        if (subductingPlate === 'left') {
+                            bendingPlate.setAttribute('d', `M ${350 + platePositions.left.x},250 Q 450,280 480,380 L 450,400 L ${350 + platePositions.left.x},350 Z`);
+                        } else {
+                            bendingPlate.setAttribute('d', `M ${650 + platePositions.right.x},250 Q 550,280 520,380 L 550,400 L ${650 + platePositions.right.x},350 Z`);
+                        }
+                        bendingPlate.setAttribute('fill', 'url(#oceanicPattern)');
+                        bendingPlate.setAttribute('stroke', '#3a3a3a');
+                        bendingPlate.setAttribute('stroke-width', '2');
+                        deformationGroup.appendChild(bendingPlate);
+                        
+                        // Melting zone creating magma
+                        const meltZone = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+                        meltZone.setAttribute('cx', subductingPlate === 'left' ? 450 : 550);
+                        meltZone.setAttribute('cy', 420);
+                        meltZone.setAttribute('rx', 30);
+                        meltZone.setAttribute('ry', 40);
+                        meltZone.setAttribute('fill', '#ff6b35');
+                        meltZone.setAttribute('opacity', '0.6');
+                        meltZone.setAttribute('filter', 'url(#glow)');
+                        deformationGroup.appendChild(meltZone);
+                        
+                        // Volcanic arc on continental plate
+                        for (let i = 0; i < 2; i++) {
+                            const volcanicConduit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                            const xPos = subductingPlate === 'left' ? 580 + i * 60 : 320 - i * 60;
+                            volcanicConduit.setAttribute('x', xPos);
+                            volcanicConduit.setAttribute('y', 200);
+                            volcanicConduit.setAttribute('width', 10);
+                            volcanicConduit.setAttribute('height', 220);
+                            volcanicConduit.setAttribute('fill', '#ff4500');
+                            volcanicConduit.setAttribute('opacity', '0.5');
+                            deformationGroup.appendChild(volcanicConduit);
+                            
+                            // Surface volcano
+                            const volcano = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                            volcano.setAttribute('points', `${xPos - 15},200 ${xPos + 5},160 ${xPos + 25},200`);
+                            volcano.setAttribute('fill', '#8b4513');
+                            deformationGroup.appendChild(volcano);
+                        }
+                        
+                        // Coastal mountain building
+                        const uplift = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        if (subductingPlate === 'left') {
+                            uplift.setAttribute('d', `M 550,250 Q 600,${230 - deformationLevel * 5} 700,250`);
+                        } else {
+                            uplift.setAttribute('d', `M 300,250 Q 400,${230 - deformationLevel * 5} 450,250`);
+                        }
+                        uplift.setAttribute('stroke', '#8b7355');
+                        uplift.setAttribute('stroke-width', '40');
+                        uplift.setAttribute('fill', 'none');
+                        deformationGroup.appendChild(uplift);
+                    } else {
+                        // Continental collision - crustal thickening
+                        const thickenedCrust = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                        thickenedCrust.setAttribute('x', 400);
+                        thickenedCrust.setAttribute('y', 250 - deformationLevel * 10);
+                        thickenedCrust.setAttribute('width', 200);
+                        thickenedCrust.setAttribute('height', 100 + deformationLevel * 10);
+                        thickenedCrust.setAttribute('fill', 'url(#continentalPattern)');
+                        thickenedCrust.setAttribute('opacity', '0.7');
+                        deformationGroup.appendChild(thickenedCrust);
+                        
+                        // Mountain range profile
+                        const mountains = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        mountains.setAttribute('d', `M 380,250 L 420,${200 - deformationLevel * 8} L 460,${180 - deformationLevel * 10} L 500,${170 - deformationLevel * 12} L 540,${180 - deformationLevel * 10} L 580,${200 - deformationLevel * 8} L 620,250`);
+                        mountains.setAttribute('fill', '#8b7355');
+                        mountains.setAttribute('stroke', '#654321');
+                        mountains.setAttribute('stroke-width', '2');
+                        deformationGroup.appendChild(mountains);
+                    }
+                }
+            } else if (currentBoundaryType === 'transform') {
+                // Show lateral offset in layers
+                const offset = platePositions.left.y - platePositions.right.y;
+                
+                // Fault zone
+                const faultZone = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                faultZone.setAttribute('x', 490);
+                faultZone.setAttribute('y', 250);
+                faultZone.setAttribute('width', 20);
+                faultZone.setAttribute('height', 250);
+                faultZone.setAttribute('fill', '#dc2626');
+                faultZone.setAttribute('opacity', '0.3');
+                deformationGroup.appendChild(faultZone);
+                
+                // Fractured rock zones
+                for (let i = 0; i < 5; i++) {
+                    const fracture = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    fracture.setAttribute('x1', 480 - i * 10);
+                    fracture.setAttribute('y1', 280 + i * 40);
+                    fracture.setAttribute('x2', 520 + i * 10);
+                    fracture.setAttribute('y2', 280 + i * 40 + offset);
+                    fracture.setAttribute('stroke', '#8b4513');
+                    fracture.setAttribute('stroke-width', '2');
+                    fracture.setAttribute('opacity', '0.5');
+                    deformationGroup.appendChild(fracture);
+                }
+            }
+        }
+
+        function updateArrows() {
+            const leftArrow = document.getElementById('leftArrow');
+            const rightArrow = document.getElementById('rightArrow');
+            
+            // Update left arrow
+            const leftMag = Math.sqrt(plateVelocities.left.x ** 2 + plateVelocities.left.y ** 2);
+            if (leftMag > 0) {
+                const leftAngle = Math.atan2(plateVelocities.left.y, plateVelocities.left.x);
+                const arrowLength = 50;
+                leftArrow.setAttribute('x1', 275);
+                leftArrow.setAttribute('y1', 150);
+                leftArrow.setAttribute('x2', 275 + Math.cos(leftAngle) * arrowLength);
+                leftArrow.setAttribute('y2', 150 + Math.sin(leftAngle) * arrowLength);
+            }
+            
+            // Update right arrow
+            const rightMag = Math.sqrt(plateVelocities.right.x ** 2 + plateVelocities.right.y ** 2);
+            if (rightMag > 0) {
+                const rightAngle = Math.atan2(plateVelocities.right.y, plateVelocities.right.x);
+                const arrowLength = 50;
+                rightArrow.setAttribute('x1', 725);
+                rightArrow.setAttribute('y1', 150);
+                rightArrow.setAttribute('x2', 725 + Math.cos(rightAngle) * arrowLength);
+                rightArrow.setAttribute('y2', 150 + Math.sin(rightAngle) * arrowLength);
+            }
+        }
+
+        function updateVisualization() {
+            updateArrows();
+            updateDeformation();
+        }
+
+        function resetSimulation() {
+            isAnimating = false;
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+            }
+            
+            platePositions = {
+                left: { x: 0, y: 0 },
+                right: { x: 0, y: 0 }
+            };
+            
+            time = 0;
+            deformationLevel = 0;
+            
+            document.getElementById('leftPlate').setAttribute('transform', 'translate(0, 0)');
+            document.getElementById('rightPlate').setAttribute('transform', 'translate(0, 0)');
+            document.getElementById('leftPlateCross').setAttribute('transform', 'translate(0, 0)');
+            document.getElementById('rightPlateCross').setAttribute('transform', 'translate(0, 0)');
+            document.getElementById('overheadDeformation').innerHTML = '';
+            document.getElementById('crossSectionDeformation').innerHTML = '';
+            
+            updateVisualization();
+        }
+
+        // Initialize
+        updatePlateAppearance();
+        updateArrows();
+    </script>
+</body>
+</html>

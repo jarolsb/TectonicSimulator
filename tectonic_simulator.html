@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tectonic Plate Boundary Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .control-group h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-divergent {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-convergent {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .btn-transform {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .btn-control {
+            background: #2d3748;
+            color: white;
+        }
+
+        .btn-control:hover {
+            background: #4a5568;
+        }
+
+        .active {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .speed-value {
+            text-align: center;
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .svg-container {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        svg {
+            width: 100%;
+            height: 500px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #e6f7ff 0%, #f0f9ff 100%);
+        }
+
+        .info-panel {
+            background: #edf2f7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .info-panel h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .info-panel p {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .reset-btn {
+            background: #ed8936;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .reset-btn:hover {
+            background: #dd6b20;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulsing {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Tectonic Plate Boundary Simulator</h1>
+        <p class="subtitle">Explore how Earth's plates interact and shape our planet</p>
+
+        <div class="controls">
+            <div class="control-group">
+                <h3>Select Boundary Type</h3>
+                <div class="button-group">
+                    <button class="btn-divergent" onclick="setBoundaryType('divergent')">
+                        ↔️ Divergent Boundary
+                    </button>
+                    <button class="btn-convergent" onclick="setBoundaryType('convergent')">
+                        →← Convergent Boundary
+                    </button>
+                    <button class="btn-transform" onclick="setBoundaryType('transform')">
+                        ↕️ Transform Boundary
+                    </button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Animation Controls</h3>
+                <label for="speed">Movement Speed</label>
+                <input type="range" id="speed" min="0" max="10" value="5" oninput="updateSpeed(this.value)">
+                <div class="speed-value">Speed: <span id="speedValue">5</span></div>
+                <button class="btn-control" onclick="toggleAnimation()">Play/Pause</button>
+                <button class="reset-btn" onclick="resetSimulation()">Reset</button>
+            </div>
+
+            <div class="control-group">
+                <h3>Plate Movement Direction</h3>
+                <label for="leftPlateX">Left Plate X Direction</label>
+                <input type="range" id="leftPlateX" min="-10" max="10" value="-5" oninput="updateDirection()">
+                
+                <label for="leftPlateY">Left Plate Y Direction</label>
+                <input type="range" id="leftPlateY" min="-10" max="10" value="0" oninput="updateDirection()">
+                
+                <label for="rightPlateX">Right Plate X Direction</label>
+                <input type="range" id="rightPlateX" min="-10" max="10" value="5" oninput="updateDirection()">
+                
+                <label for="rightPlateY">Right Plate Y Direction</label>
+                <input type="range" id="rightPlateY" min="-10" max="10" value="0" oninput="updateDirection()">
+            </div>
+        </div>
+
+        <div class="svg-container">
+            <svg id="simulator" viewBox="0 0 800 500">
+                <!-- Ocean/Background -->
+                <defs>
+                    <linearGradient id="oceanGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#3182ce;stop-opacity:0.2" />
+                        <stop offset="100%" style="stop-color:#2c5282;stop-opacity:0.3" />
+                    </linearGradient>
+                    
+                    <pattern id="platePattern1" patternUnits="userSpaceOnUse" width="40" height="40">
+                        <rect width="40" height="40" fill="#8b7355"/>
+                        <circle cx="10" cy="10" r="3" fill="#6b5a45" opacity="0.5"/>
+                        <circle cx="30" cy="30" r="3" fill="#6b5a45" opacity="0.5"/>
+                    </pattern>
+                    
+                    <pattern id="platePattern2" patternUnits="userSpaceOnUse" width="40" height="40">
+                        <rect width="40" height="40" fill="#9b8365"/>
+                        <circle cx="20" cy="20" r="3" fill="#7b6355" opacity="0.5"/>
+                    </pattern>
+
+                    <filter id="shadow">
+                        <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+                    </filter>
+                </defs>
+
+                <!-- Background -->
+                <rect width="800" height="500" fill="url(#oceanGradient)"/>
+
+                <!-- Grid lines for reference -->
+                <g id="grid" opacity="0.1">
+                    <line x1="100" y1="0" x2="100" y2="500" stroke="#000" stroke-width="1"/>
+                    <line x1="200" y1="0" x2="200" y2="500" stroke="#000" stroke-width="1"/>
+                    <line x1="300" y1="0" x2="300" y2="500" stroke="#000" stroke-width="1"/>
+                    <line x1="400" y1="0" x2="400" y2="500" stroke="#000" stroke-width="1"/>
+                    <line x1="500" y1="0" x2="500" y2="500" stroke="#000" stroke-width="1"/>
+                    <line x1="600" y1="0" x2="600" y2="500" stroke="#000" stroke-width="1"/>
+                    <line x1="700" y1="0" x2="700" y2="500" stroke="#000" stroke-width="1"/>
+                    <line x1="0" y1="100" x2="800" y2="100" stroke="#000" stroke-width="1"/>
+                    <line x1="0" y1="200" x2="800" y2="200" stroke="#000" stroke-width="1"/>
+                    <line x1="0" y1="300" x2="800" y2="300" stroke="#000" stroke-width="1"/>
+                    <line x1="0" y1="400" x2="800" y2="400" stroke="#000" stroke-width="1"/>
+                </g>
+
+                <!-- Tectonic Plates -->
+                <g id="plates">
+                    <!-- Left Plate -->
+                    <g id="leftPlate" transform="translate(0, 0)">
+                        <rect x="50" y="150" width="300" height="200" fill="url(#platePattern1)" 
+                              stroke="#5a4a3a" stroke-width="3" filter="url(#shadow)"/>
+                        <text x="200" y="250" text-anchor="middle" fill="white" font-size="20" font-weight="bold">
+                            Plate A
+                        </text>
+                    </g>
+
+                    <!-- Right Plate -->
+                    <g id="rightPlate" transform="translate(0, 0)">
+                        <rect x="450" y="150" width="300" height="200" fill="url(#platePattern2)" 
+                              stroke="#5a4a3a" stroke-width="3" filter="url(#shadow)"/>
+                        <text x="600" y="250" text-anchor="middle" fill="white" font-size="20" font-weight="bold">
+                            Plate B
+                        </text>
+                    </g>
+                </g>
+
+                <!-- Boundary Features (will be dynamically updated) -->
+                <g id="boundaryFeatures"></g>
+
+                <!-- Movement Arrows -->
+                <g id="arrows">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="10" 
+                                refX="9" refY="3" orient="auto">
+                            <polygon points="0 0, 10 3, 0 6" fill="red" />
+                        </marker>
+                    </defs>
+                    
+                    <!-- Left plate arrow -->
+                    <line id="leftArrow" x1="200" y1="100" x2="250" y2="100" 
+                          stroke="red" stroke-width="3" marker-end="url(#arrowhead)" />
+                    
+                    <!-- Right plate arrow -->
+                    <line id="rightArrow" x1="600" y1="100" x2="550" y2="100" 
+                          stroke="red" stroke-width="3" marker-end="url(#arrowhead)" />
+                </g>
+
+                <!-- Labels -->
+                <g id="labels">
+                    <text x="400" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2d3748">
+                        <tspan id="boundaryTypeLabel">Select a Boundary Type</tspan>
+                    </text>
+                </g>
+
+                <!-- Deformation Features -->
+                <g id="deformation"></g>
+            </svg>
+        </div>
+
+        <div class="info-panel">
+            <h3 id="infoTitle">Welcome to the Tectonic Plate Simulator!</h3>
+            <p id="infoDescription">
+                Select a boundary type above to begin exploring how tectonic plates interact. 
+                You can adjust the movement speed and direction of the plates to see how different 
+                configurations create various geological features.
+            </p>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8b7355;"></div>
+                <span>Continental Plate</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #9b8365;"></div>
+                <span>Oceanic Plate</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #ef4444, #f97316);"></div>
+                <span>Volcanic Activity</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #3b82f6;"></div>
+                <span>Ocean Ridge/Trench</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentBoundaryType = null;
+        let animationSpeed = 5;
+        let isAnimating = false;
+        let animationFrame = null;
+        let platePositions = {
+            left: { x: 0, y: 0 },
+            right: { x: 0, y: 0 }
+        };
+        let plateVelocities = {
+            left: { x: -0.5, y: 0 },
+            right: { x: 0.5, y: 0 }
+        };
+        let time = 0;
+
+        function setBoundaryType(type) {
+            currentBoundaryType = type;
+            resetSimulation();
+            
+            // Update active button styling
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update information panel
+            const infoData = {
+                divergent: {
+                    title: "Divergent Boundary - Plates Moving Apart",
+                    description: "At divergent boundaries, tectonic plates move away from each other. This creates new oceanic crust through volcanic activity. Examples include the Mid-Atlantic Ridge where new ocean floor is constantly being created. As plates separate, magma rises from the mantle to fill the gap, creating underwater mountain ranges and rift valleys.",
+                    leftVel: { x: -0.5, y: 0 },
+                    rightVel: { x: 0.5, y: 0 }
+                },
+                convergent: {
+                    title: "Convergent Boundary - Plates Colliding",
+                    description: "At convergent boundaries, plates move toward each other. This can result in subduction (one plate sliding under another) creating deep ocean trenches and volcanic arcs, or continental collision forming mountain ranges like the Himalayas. These boundaries are associated with powerful earthquakes and volcanic activity.",
+                    leftVel: { x: 0.5, y: 0 },
+                    rightVel: { x: -0.5, y: 0 }
+                },
+                transform: {
+                    title: "Transform Boundary - Plates Sliding Past",
+                    description: "At transform boundaries, plates slide horizontally past each other. No crust is created or destroyed, but the friction between plates can cause earthquakes. The San Andreas Fault in California is a famous example. These boundaries typically form perpendicular to mid-ocean ridges.",
+                    leftVel: { x: 0, y: -0.5 },
+                    rightVel: { x: 0, y: 0.5 }
+                }
+            };
+            
+            const info = infoData[type];
+            document.getElementById('infoTitle').textContent = info.title;
+            document.getElementById('infoDescription').textContent = info.description;
+            document.getElementById('boundaryTypeLabel').textContent = info.title.split(' - ')[0];
+            
+            // Set default velocities based on boundary type
+            plateVelocities.left = { ...info.leftVel };
+            plateVelocities.right = { ...info.rightVel };
+            
+            // Update direction sliders
+            document.getElementById('leftPlateX').value = info.leftVel.x * 10;
+            document.getElementById('leftPlateY').value = info.leftVel.y * 10;
+            document.getElementById('rightPlateX').value = info.rightVel.x * 10;
+            document.getElementById('rightPlateY').value = info.rightVel.y * 10;
+            
+            // Update visualization
+            updateVisualization();
+        }
+
+        function updateSpeed(value) {
+            animationSpeed = parseInt(value);
+            document.getElementById('speedValue').textContent = value;
+        }
+
+        function updateDirection() {
+            plateVelocities.left.x = parseFloat(document.getElementById('leftPlateX').value) / 10;
+            plateVelocities.left.y = parseFloat(document.getElementById('leftPlateY').value) / 10;
+            plateVelocities.right.x = parseFloat(document.getElementById('rightPlateX').value) / 10;
+            plateVelocities.right.y = parseFloat(document.getElementById('rightPlateY').value) / 10;
+            
+            updateArrows();
+        }
+
+        function updateArrows() {
+            const leftArrow = document.getElementById('leftArrow');
+            const rightArrow = document.getElementById('rightArrow');
+            
+            // Update left arrow
+            const leftMag = Math.sqrt(plateVelocities.left.x ** 2 + plateVelocities.left.y ** 2);
+            if (leftMag > 0) {
+                const leftAngle = Math.atan2(plateVelocities.left.y, plateVelocities.left.x);
+                const arrowLength = 50;
+                leftArrow.setAttribute('x1', 200);
+                leftArrow.setAttribute('y1', 100);
+                leftArrow.setAttribute('x2', 200 + Math.cos(leftAngle) * arrowLength);
+                leftArrow.setAttribute('y2', 100 + Math.sin(leftAngle) * arrowLength);
+            }
+            
+            // Update right arrow
+            const rightMag = Math.sqrt(plateVelocities.right.x ** 2 + plateVelocities.right.y ** 2);
+            if (rightMag > 0) {
+                const rightAngle = Math.atan2(plateVelocities.right.y, plateVelocities.right.x);
+                const arrowLength = 50;
+                rightArrow.setAttribute('x1', 600);
+                rightArrow.setAttribute('y1', 100);
+                rightArrow.setAttribute('x2', 600 + Math.cos(rightAngle) * arrowLength);
+                rightArrow.setAttribute('y2', 100 + Math.sin(rightAngle) * arrowLength);
+            }
+        }
+
+        function toggleAnimation() {
+            if (!currentBoundaryType) {
+                alert('Please select a boundary type first!');
+                return;
+            }
+            
+            isAnimating = !isAnimating;
+            if (isAnimating) {
+                animate();
+            } else if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+            }
+        }
+
+        function animate() {
+            if (!isAnimating) return;
+            
+            time += animationSpeed / 100;
+            
+            // Update plate positions
+            platePositions.left.x += plateVelocities.left.x * animationSpeed / 5;
+            platePositions.left.y += plateVelocities.left.y * animationSpeed / 5;
+            platePositions.right.x += plateVelocities.right.x * animationSpeed / 5;
+            platePositions.right.y += plateVelocities.right.y * animationSpeed / 5;
+            
+            // Apply position limits
+            const maxDisplacement = 100;
+            platePositions.left.x = Math.max(-maxDisplacement, Math.min(maxDisplacement, platePositions.left.x));
+            platePositions.left.y = Math.max(-maxDisplacement, Math.min(maxDisplacement, platePositions.left.y));
+            platePositions.right.x = Math.max(-maxDisplacement, Math.min(maxDisplacement, platePositions.right.x));
+            platePositions.right.y = Math.max(-maxDisplacement, Math.min(maxDisplacement, platePositions.right.y));
+            
+            // Update plate transforms
+            document.getElementById('leftPlate').setAttribute('transform', 
+                `translate(${platePositions.left.x}, ${platePositions.left.y})`);
+            document.getElementById('rightPlate').setAttribute('transform', 
+                `translate(${platePositions.right.x}, ${platePositions.right.y})`);
+            
+            // Update deformation features
+            updateDeformation();
+            
+            animationFrame = requestAnimationFrame(animate);
+        }
+
+        function updateDeformation() {
+            const deformationGroup = document.getElementById('deformation');
+            deformationGroup.innerHTML = '';
+            
+            if (!currentBoundaryType) return;
+            
+            const gap = 400 - (350 + platePositions.left.x) + (450 + platePositions.right.x);
+            
+            if (currentBoundaryType === 'divergent') {
+                // Create rift valley / mid-ocean ridge
+                if (gap > 100) {
+                    const ridge = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    ridge.setAttribute('points', `${350 + platePositions.left.x},250 ${400},200 ${450 + platePositions.right.x},250`);
+                    ridge.setAttribute('fill', '#3b82f6');
+                    ridge.setAttribute('opacity', '0.7');
+                    deformationGroup.appendChild(ridge);
+                    
+                    // Add volcanic activity
+                    for (let i = 0; i < 3; i++) {
+                        const volcano = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        volcano.setAttribute('cx', 400);
+                        volcano.setAttribute('cy', 200 + i * 30);
+                        volcano.setAttribute('r', 5 + Math.sin(time + i) * 2);
+                        volcano.setAttribute('fill', '#ef4444');
+                        volcano.setAttribute('opacity', 0.8 - i * 0.2);
+                        volcano.classList.add('pulsing');
+                        deformationGroup.appendChild(volcano);
+                    }
+                }
+            } else if (currentBoundaryType === 'convergent') {
+                // Create subduction zone or mountain
+                if (gap < 50) {
+                    // Mountains
+                    const mountain = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    const height = Math.max(0, 50 - gap) * 2;
+                    mountain.setAttribute('points', 
+                        `${380},250 ${400},${250 - height} ${420},250`);
+                    mountain.setAttribute('fill', '#8b4513');
+                    mountain.setAttribute('stroke', '#654321');
+                    mountain.setAttribute('stroke-width', '2');
+                    deformationGroup.appendChild(mountain);
+                    
+                    // Smaller peaks
+                    const peak1 = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    peak1.setAttribute('points', 
+                        `${360},250 ${370},${250 - height * 0.7} ${380},250`);
+                    peak1.setAttribute('fill', '#a0522d');
+                    deformationGroup.appendChild(peak1);
+                    
+                    const peak2 = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    peak2.setAttribute('points', 
+                        `${420},250 ${430},${250 - height * 0.7} ${440},250`);
+                    peak2.setAttribute('fill', '#a0522d');
+                    deformationGroup.appendChild(peak2);
+                }
+                
+                // Ocean trench
+                const trench = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                trench.setAttribute('x', 390);
+                trench.setAttribute('y', 350);
+                trench.setAttribute('width', 20);
+                trench.setAttribute('height', Math.min(50, 100 - gap));
+                trench.setAttribute('fill', '#1e3a8a');
+                trench.setAttribute('opacity', '0.6');
+                deformationGroup.appendChild(trench);
+            } else if (currentBoundaryType === 'transform') {
+                // Create fault line with offset
+                const offset = platePositions.left.y - platePositions.right.y;
+                
+                const faultLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                faultLine.setAttribute('x1', 400);
+                faultLine.setAttribute('y1', 150);
+                faultLine.setAttribute('x2', 400);
+                faultLine.setAttribute('y2', 350);
+                faultLine.setAttribute('stroke', '#dc2626');
+                faultLine.setAttribute('stroke-width', '4');
+                faultLine.setAttribute('stroke-dasharray', '10,5');
+                deformationGroup.appendChild(faultLine);
+                
+                // Add earthquake indicators
+                if (Math.abs(offset) > 20) {
+                    for (let i = 0; i < 3; i++) {
+                        const quake = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        quake.setAttribute('cx', 400 + (Math.random() - 0.5) * 50);
+                        quake.setAttribute('cy', 250 + (Math.random() - 0.5) * 50);
+                        quake.setAttribute('r', 3 + Math.sin(time * 10 + i) * 2);
+                        quake.setAttribute('fill', 'none');
+                        quake.setAttribute('stroke', '#fbbf24');
+                        quake.setAttribute('stroke-width', '2');
+                        quake.setAttribute('opacity', Math.abs(Math.sin(time * 5 + i)));
+                        deformationGroup.appendChild(quake);
+                    }
+                }
+            }
+        }
+
+        function updateVisualization() {
+            updateArrows();
+            updateDeformation();
+        }
+
+        function resetSimulation() {
+            isAnimating = false;
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+            }
+            
+            platePositions = {
+                left: { x: 0, y: 0 },
+                right: { x: 0, y: 0 }
+            };
+            
+            time = 0;
+            
+            document.getElementById('leftPlate').setAttribute('transform', 'translate(0, 0)');
+            document.getElementById('rightPlate').setAttribute('transform', 'translate(0, 0)');
+            document.getElementById('deformation').innerHTML = '';
+            
+            updateVisualization();
+        }
+
+        // Initialize
+        updateArrows();
+    </script>
+</body>
+</html>
